@@ -1,16 +1,27 @@
 import { defineConfig, devices } from '@playwright/test';
-import type {TestOptions} from './test-options'
+import type {TestOptions} from './test-options';
 
 require('dotenv').config();
 export default defineConfig<TestOptions>({
   retries: 1,
-  reporter: 'html',
+  reporter: [ 
+  ['html'], 
+  process.env.CI ? ["dot"] : ["list"],
+  [
+      "@argos-ci/playwright/reporter",
+      {
+        // Upload to Argos on CI only.
+        uploadToArgos: !!process.env.CI,
+      },
+    ],
+  ],
 
   use: {
     globalsQaURL: 'https://www.globalsqa.com/demo-site/draganddrop/',
     baseURL: process.env.DEV == '1' ? 'http://localhost:4201/'
         : process.env.UAT == '1' ? 'http://localhost:4202/' : 'http://localhost:4200/',
     trace: 'on-first-retry',
+    screenshot: "only-on-failure",
     video: 'off',
   },
 
